@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Pusher WS Test</title>
+</head>
+<body>
+  <h3>Pusher Test (gold-price / PriceUpdated)</h3>
+  <pre id="log"></pre>
+
+  <script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
+  <script>
+    const logEl = document.getElementById('log');
+    const log = (m) => { logEl.textContent += m + "\n"; console.log(m); };
+
+    // مهم: Pusher SDK محتاج wsHost / wssPort
+    const pusher = new Pusher("newGoldKey2026", {
+      wsHost: "ws.officialgold.site",
+      wsPort: 80,
+      wssPort: 443,
+      forceTLS: true,
+      enabledTransports: ["ws", "wss"],
+      cluster: "mt1", // حتى لو مش مستخدم فعليًا
+    });
+
+    pusher.connection.bind("connected", () => log("CONNECTED: " + pusher.connection.socket_id));
+    pusher.connection.bind("error", (e) => log("CONN_ERROR: " + JSON.stringify(e)));
+
+    const channel = pusher.subscribe("gold-price");
+    channel.bind("pusher:subscription_succeeded", () => log("SUBSCRIBED: gold-price"));
+
+    channel.bind("PriceUpdated", (data) => {
+      log("EVENT: PriceUpdated");
+      log("DATA: " + JSON.stringify(data));
+      log("----");
+    });
+  </script>
+</body>
+</html>
